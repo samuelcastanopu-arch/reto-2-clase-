@@ -1,0 +1,65 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Funciones auxiliares de seguridad
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.role == 'admin';
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // 1. Colección de usuarios / perfiles
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Creación permitida en registro con rol 'client'
+      allow create: if isOwner(userId)
+        && request.resource.data.uid == userId
+        && request.resource.data.role == 'client'
+        && request.resource.data.accountStatus == 'ACTIVE';
+
+      // Actualización de campos de contacto y perfil por parte del dueño.
+      // Prohibido auto-modificarse el rol, estado de cuenta o uid.
+      allow update: if isOwner(userId)
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'accountStatus', 'uid', 'createdAt'])
+        || isAdmin();
+
+      allow delete: if false;
+    }
+
+    // 2. Divisas y tasas base vigentes
+    match /currencies/{currencyCode} {
+      allow read: if isAuthenticated();
+      // Escritura BLOQUEADA desde la app móvil. Solo modificable por Cloud Function con Admin SDK.
+      allow write: if false;
+    }
+
+    // 3. Historial inmutable de cambios de tasas
+    match /rate_history/{historyId} {
+      allow read: if isAdmin();
+      allow write: if false; // Inmutable desde el cliente
+    }
+
+    // 4. Operaciones simuladas
+    match /operations/{operationId} {
+      // El cliente solo lee sus propias operaciones; el admin lee todas.
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+      // ESCRITURA DIRECTA PROHIBIDA:
+      // Debe procesarse obligatoriamente por la Cloud Function 'simulateOperation'
+      allow write: if false;
+    }
+
+    // 5. Registros de auditoría
+    match /audit_logs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false; // Solo el backend registra auditoría
+    }
+  }
+}

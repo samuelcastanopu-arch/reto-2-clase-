@@ -1,0 +1,38 @@
+# OS generated files
+.DS_Store
+Thumbs.db
+*.bak
+*.tmp
+
+# Android / Gradle
+.gradle/
+build/
+android/build/
+android/app/build/
+android/.gradle/
+android/local.properties
+android/.idea/
+android/*.iml
+android/app/*.iml
+*.keystore
+*.jks
+
+# Android Studio
+.idea/
+*.iws
+*.out
+captures/
+
+# Node / Backend
+backend/functions/node_modules/
+backend/functions/lib/
+backend/functions/*.log
+backend/functions/.env
+backend/.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Private keys / secrets
+*secret*
+*.pem
