@@ -2,24 +2,25 @@ package com.divisas.simulator.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
-val EmeraldPrimary = Color(0xFF059669)
-val EmeraldOnPrimary = Color(0xFFFFFFFF)
-val EmeraldContainer = Color(0xFFD1FAE5)
-val EmeraldOnContainer = Color(0xFF064E3B)
+// Paleta Dark / Black Profesional
+val PureBlack = Color(0xFF05070B)
+val MidnightBackground = Color(0xFF090D16)
+val SurfaceDark = Color(0xFF111827)
+val CardBackgroundDark = Color(0xFF161F30)
+val CardBorderDark = Color(0xFF26334D)
 
-val SlateSecondary = Color(0xFF1E293B)
-val SlateOnSecondary = Color(0xFFFFFFFF)
-val SlateContainer = Color(0xFFE2E8F0)
-val SlateOnContainer = Color(0xFF0F172A)
+val AccentCyan = Color(0xFF38BDF8)
+val AccentIndigo = Color(0xFF6366F1)
+val AccentPurple = Color(0xFF8B5CF6)
+val AccentEmerald = Color(0xFF10B981)
+val AccentAmber = Color(0xFFF59E0B)
+val AccentRose = Color(0xFFEF4444)
 
-val BackgroundLight = Color(0xFFF8FAFC)
-val SurfaceLight = Color(0xFFFFFFFF)
-val SurfaceVariantLight = Color(0xFFF1F5F9)
+val TextPrimaryDark = Color(0xFFF8FAFC)
+val TextSecondaryDark = Color(0xFF94A3B8)
+val TextMutedDark = Color(0xFF64748B)
 
-val ErrorRose = Color(0xFFE11D48)
-val ErrorContainerRose = Color(0xFFFFE4E6)
-val OnErrorRose = Color(0xFFFFFFFF)
-
-val SuccessGreen = Color(0xFF10B981)
-val WarningAmber = Color(0xFFD97706)
-val NeutralBorder = Color(0xFFCBD5E1)
+val PrimaryDark = AccentCyan
+val OnPrimaryDark = Color(0xFF05070B)
+val SecondaryDark = AccentIndigo
+val OnSecondaryDark = Color(0xFFFFFFFF)

@@ -2,6 +2,7 @@ package com.divisas.simulator.presentation.screens.auth
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,9 +20,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AdminPanelSettings
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
@@ -38,8 +38,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -84,10 +87,14 @@ fun AuthScreen(
     var regPassword by remember { mutableStateOf("") }
     var regRole by remember { mutableStateOf(UserRole.CLIENT) }
 
+    val darkCardColor = Color(0xFF101726)
+    val darkBorderColor = Color(0xFF1E293B)
+    val inputBgColor = Color(0xFF090D16)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8F9FA))
+            .background(Color(0xFF070A10))
             .verticalScroll(rememberScrollState())
             .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -97,30 +104,32 @@ fun AuthScreen(
         // Encabezado
         Box(
             modifier = Modifier
-                .size(72.dp)
+                .size(76.dp)
                 .clip(CircleShape)
-                .background(Color(0xFF1E3A8A)),
+                .background(Color(0xFF1E293B))
+                .border(1.5.dp, Color(0xFF38BDF8), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Security,
                 contentDescription = null,
-                tint = Color.White,
+                tint = Color(0xFF38BDF8),
                 modifier = Modifier.size(40.dp)
             )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(14.dp))
         Text(
-            text = "Divisas Simulator 🪙",
+            text = "DIVISAS SIMULATOR 🪙",
             style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF1E3A8A)
+            fontWeight = FontWeight.ExtraBold,
+            color = Color(0xFFF8FAFC),
+            letterSpacing = 1.sp
         )
         Text(
-            text = "Reto 2 • Finnhub • Auditoría Regla 2.5% • Multimedia",
+            text = "Plataforma Contable de Divisas • Auditoría 2.5% • Finnhub Pro",
             style = MaterialTheme.typography.bodyMedium,
-            color = Color(0xFF6B7280),
+            color = Color(0xFF94A3B8),
             textAlign = TextAlign.Center
         )
 
@@ -132,13 +141,14 @@ fun AuthScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE)),
+                        .padding(bottom = 16.dp)
+                        .border(1.dp, Color(0xFFEF4444), RoundedCornerShape(12.dp)),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF280B10)),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
                         text = "⚠️ $msg",
-                        color = Color(0xFFC62828),
+                        color = Color(0xFFFCA5A5),
                         modifier = Modifier.padding(14.dp),
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium
@@ -151,9 +161,10 @@ fun AuthScreen(
         if (currentUser != null) {
             val user = currentUser!!
             Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, darkBorderColor, RoundedCornerShape(16.dp)),
+                colors = CardDefaults.cardColors(containerColor = darkCardColor),
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Column(
@@ -166,16 +177,16 @@ fun AuthScreen(
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(50.dp)
+                                .size(52.dp)
                                 .clip(CircleShape)
-                                .background(if (user.isAdmin) Color(0xFF673AB7) else Color(0xFF0288D1)),
+                                .background(if (user.isAdmin) Color(0xFF7C3AED) else Color(0xFF0284C7)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = if (user.isAdmin) Icons.Default.AdminPanelSettings else Icons.Default.Person,
                                 contentDescription = null,
                                 tint = Color.White,
-                                modifier = Modifier.size(28.dp)
+                                modifier = Modifier.size(30.dp)
                             )
                         }
                         Spacer(modifier = Modifier.width(12.dp))
@@ -184,12 +195,12 @@ fun AuthScreen(
                                 text = user.fullName,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1F2937)
+                                color = Color(0xFFF8FAFC)
                             )
                             Text(
                                 text = user.email,
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFF6B7280)
+                                color = Color(0xFF94A3B8)
                             )
                         }
                     }
@@ -199,16 +210,21 @@ fun AuthScreen(
                     // Badge de Rol
                     Card(
                         colors = CardDefaults.cardColors(
-                            containerColor = if (user.isAdmin) Color(0xFFEDE7F6) else Color(0xFFE1F5FE)
+                            containerColor = if (user.isAdmin) Color(0xFF2E1065) else Color(0xFF082F49)
                         ),
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.border(
+                            1.dp,
+                            if (user.isAdmin) Color(0xFF8B5CF6) else Color(0xFF0284C7),
+                            RoundedCornerShape(8.dp)
+                        )
                     ) {
                         Text(
-                            text = if (user.isAdmin) "🛡️ Rol: Administrador (Auditor)" else "👤 Rol: Usuario (Compra / Venta)",
-                            color = if (user.isAdmin) Color(0xFF512DA8) else Color(0xFF0277BD),
+                            text = if (user.isAdmin) "🛡️ ROL: ADMINISTRADOR (AUDITOR)" else "👤 ROL: USUARIO (COMPRA / VENTA)",
+                            color = if (user.isAdmin) Color(0xFFC4B5FD) else Color(0xFF7DD3FC),
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                             fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp
+                            fontSize = 12.sp
                         )
                     }
 
@@ -221,12 +237,14 @@ fun AuthScreen(
                             authViewModel.switchRoleForDemo(nextRole)
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(10.dp)
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF38BDF8))
                     ) {
                         Icon(imageVector = Icons.Default.SwapHoriz, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = if (user.isAdmin) "Cambiar rol a Usuario (Cliente)" else "Cambiar rol a Administrador (Auditor)"
+                            text = if (user.isAdmin) "Cambiar a rol Usuario (Cliente)" else "Cambiar a rol Administrador (Auditor)",
+                            fontWeight = FontWeight.SemiBold
                         )
                     }
 
@@ -239,13 +257,16 @@ fun AuthScreen(
                         },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (user.isAdmin) Color(0xFF673AB7) else Color(0xFF1E3A8A)
+                            containerColor = if (user.isAdmin) Color(0xFF7C3AED) else Color(0xFF0284C7)
                         ),
                         shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text(text = if (user.isAdmin) "Ir al Panel de Auditoría" else "Ir a Compra y Venta")
+                        Text(
+                            text = if (user.isAdmin) "Ir al Panel de Auditoría" else "Ir a Compra y Venta",
+                            fontWeight = FontWeight.Bold
+                        )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Icon(imageVector = Icons.Default.ArrowForward, contentDescription = null)
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))
@@ -253,7 +274,7 @@ fun AuthScreen(
                     OutlinedButton(
                         onClick = { authViewModel.logout() },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFDC2626)),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFF87171)),
                         shape = RoundedCornerShape(10.dp)
                     ) {
                         Text("Cerrar Sesión")
@@ -265,16 +286,26 @@ fun AuthScreen(
         } else {
             // Formulario de Autenticación (Tabs: Iniciar Sesión / Registrarse)
             Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, darkBorderColor, RoundedCornerShape(16.dp)),
+                colors = CardDefaults.cardColors(containerColor = darkCardColor),
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     TabRow(
                         selectedTabIndex = selectedTab,
-                        containerColor = Color(0xFFF3F4F6),
-                        modifier = Modifier.clip(RoundedCornerShape(10.dp))
+                        containerColor = Color(0xFF090D16),
+                        contentColor = Color(0xFF38BDF8),
+                        indicator = { tabPositions ->
+                            TabRowDefaults.SecondaryIndicator(
+                                Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                                color = Color(0xFF38BDF8)
+                            )
+                        },
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(10.dp))
+                            .border(1.dp, darkBorderColor, RoundedCornerShape(10.dp))
                     ) {
                         Tab(
                             selected = selectedTab == 0,
@@ -282,7 +313,13 @@ fun AuthScreen(
                                 selectedTab = 0
                                 authViewModel.clearError()
                             },
-                            text = { Text("Iniciar Sesión", fontWeight = FontWeight.Bold) }
+                            text = {
+                                Text(
+                                    "Iniciar Sesión",
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (selectedTab == 0) Color(0xFF38BDF8) else Color(0xFF64748B)
+                                )
+                            }
                         )
                         Tab(
                             selected = selectedTab == 1,
@@ -290,19 +327,37 @@ fun AuthScreen(
                                 selectedTab = 1
                                 authViewModel.clearError()
                             },
-                            text = { Text("Registrarse", fontWeight = FontWeight.Bold) }
+                            text = {
+                                Text(
+                                    "Registrarse",
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (selectedTab == 1) Color(0xFF38BDF8) else Color(0xFF64748B)
+                                )
+                            }
                         )
                     }
 
                     Spacer(modifier = Modifier.height(20.dp))
 
+                    val textFieldColors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color(0xFFF8FAFC),
+                        unfocusedTextColor = Color(0xFFCBD5E1),
+                        focusedBorderColor = Color(0xFF38BDF8),
+                        unfocusedBorderColor = Color(0xFF1E293B),
+                        focusedLabelColor = Color(0xFF38BDF8),
+                        unfocusedLabelColor = Color(0xFF64748B),
+                        focusedLeadingIconColor = Color(0xFF38BDF8),
+                        unfocusedLeadingIconColor = Color(0xFF64748B),
+                        cursorColor = Color(0xFF38BDF8)
+                    )
+
                     if (selectedTab == 0) {
                         // VISTA INICIAR SESIÓN
                         Text(
-                            text = "Acceso con Correo",
+                            text = "Acceso a la Plataforma",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1F2937)
+                            color = Color(0xFFF8FAFC)
                         )
                         Spacer(modifier = Modifier.height(12.dp))
 
@@ -311,9 +366,12 @@ fun AuthScreen(
                             onValueChange = { loginEmail = it },
                             label = { Text("Correo electrónico") },
                             leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(inputBgColor, RoundedCornerShape(10.dp)),
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                            colors = textFieldColors,
                             shape = RoundedCornerShape(10.dp)
                         )
 
@@ -324,10 +382,13 @@ fun AuthScreen(
                             onValueChange = { loginPassword = it },
                             label = { Text("Contraseña") },
                             leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(inputBgColor, RoundedCornerShape(10.dp)),
                             singleLine = true,
                             visualTransformation = PasswordVisualTransformation(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                            colors = textFieldColors,
                             shape = RoundedCornerShape(10.dp)
                         )
 
@@ -344,13 +405,13 @@ fun AuthScreen(
                                 .fillMaxWidth()
                                 .height(48.dp),
                             enabled = !isLoading,
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E3A8A)),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7)),
                             shape = RoundedCornerShape(10.dp)
                         ) {
                             if (isLoading) {
                                 CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
                             } else {
-                                Text("Iniciar Sesión", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                Text("Iniciar Sesión", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
                             }
                         }
 
@@ -358,9 +419,9 @@ fun AuthScreen(
 
                         // BOTONES DE ACCESO RÁPIDO PARA EVALUACIÓN
                         Text(
-                            text = "Accesos Rápidos de Prueba (Demo)",
+                            text = "Accesos Rápidos de Prueba (Evaluación):",
                             style = MaterialTheme.typography.labelMedium,
-                            color = Color(0xFF6B7280),
+                            color = Color(0xFF64748B),
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -374,7 +435,10 @@ fun AuthScreen(
                                         onNavigateToTrading()
                                     }
                                 },
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .border(1.dp, Color(0xFF0284C7), RoundedCornerShape(8.dp)),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF38BDF8)),
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                                 Text("👤 Usuario", fontSize = 12.sp, fontWeight = FontWeight.Bold)
@@ -388,7 +452,10 @@ fun AuthScreen(
                                         onNavigateToAdmin()
                                     }
                                 },
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .border(1.dp, Color(0xFF7C3AED), RoundedCornerShape(8.dp)),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFA78BFA)),
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                                 Text("🛡️ Admin", fontSize = 12.sp, fontWeight = FontWeight.Bold)
@@ -397,10 +464,10 @@ fun AuthScreen(
                     } else {
                         // VISTA REGISTRARSE
                         Text(
-                            text = "Crear Nueva Cuenta",
+                            text = "Crear Cuenta Nueva",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1F2937)
+                            color = Color(0xFFF8FAFC)
                         )
                         Spacer(modifier = Modifier.height(12.dp))
 
@@ -409,16 +476,22 @@ fun AuthScreen(
                                 value = regFirstName,
                                 onValueChange = { regFirstName = it },
                                 label = { Text("Nombre") },
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .background(inputBgColor, RoundedCornerShape(10.dp)),
                                 singleLine = true,
+                                colors = textFieldColors,
                                 shape = RoundedCornerShape(10.dp)
                             )
                             OutlinedTextField(
                                 value = regLastName,
                                 onValueChange = { regLastName = it },
                                 label = { Text("Apellido") },
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .background(inputBgColor, RoundedCornerShape(10.dp)),
                                 singleLine = true,
+                                colors = textFieldColors,
                                 shape = RoundedCornerShape(10.dp)
                             )
                         }
@@ -430,9 +503,12 @@ fun AuthScreen(
                             onValueChange = { regEmail = it },
                             label = { Text("Correo electrónico") },
                             leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(inputBgColor, RoundedCornerShape(10.dp)),
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                            colors = textFieldColors,
                             shape = RoundedCornerShape(10.dp)
                         )
 
@@ -443,20 +519,23 @@ fun AuthScreen(
                             onValueChange = { regPassword = it },
                             label = { Text("Contraseña (mín. 6 caracteres)") },
                             leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(inputBgColor, RoundedCornerShape(10.dp)),
                             singleLine = true,
                             visualTransformation = PasswordVisualTransformation(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                            colors = textFieldColors,
                             shape = RoundedCornerShape(10.dp)
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Text(
-                            text = "Seleccione el Rol de la Cuenta:",
+                            text = "Seleccione el Rol Contable:",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF374151)
+                            color = Color(0xFFCBD5E1)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
 
@@ -467,8 +546,10 @@ fun AuthScreen(
                                 label = { Text("👤 Usuario (Cliente)") },
                                 modifier = Modifier.weight(1f),
                                 colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = Color(0xFFE0E7FF),
-                                    selectedLabelColor = Color(0xFF1E3A8A)
+                                    selectedContainerColor = Color(0xFF0369A1),
+                                    selectedLabelColor = Color.White,
+                                    containerColor = Color(0xFF0F172A),
+                                    labelColor = Color(0xFF94A3B8)
                                 )
                             )
 
@@ -478,8 +559,10 @@ fun AuthScreen(
                                 label = { Text("🛡️ Administrador") },
                                 modifier = Modifier.weight(1f),
                                 colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = Color(0xFFEDE7F6),
-                                    selectedLabelColor = Color(0xFF512DA8)
+                                    selectedContainerColor = Color(0xFF6D28D9),
+                                    selectedLabelColor = Color.White,
+                                    containerColor = Color(0xFF0F172A),
+                                    labelColor = Color(0xFF94A3B8)
                                 )
                             )
                         }
@@ -502,13 +585,13 @@ fun AuthScreen(
                                 .fillMaxWidth()
                                 .height(48.dp),
                             enabled = !isLoading,
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E3A8A)),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7)),
                             shape = RoundedCornerShape(10.dp)
                         ) {
                             if (isLoading) {
                                 CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
                             } else {
-                                Text("Registrar Cuenta", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                Text("Registrar Cuenta", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
                             }
                         }
                     }
