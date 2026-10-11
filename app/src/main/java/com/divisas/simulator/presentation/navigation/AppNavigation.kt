@@ -1,21 +1,16 @@
 package com.divisas.simulator.presentation.navigation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.TrendingUp
@@ -25,7 +20,6 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -37,7 +31,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -72,30 +65,32 @@ fun AppNavigation(
     val currentRoute = navBackStackEntry?.destination?.route ?: Screen.Auth.route
 
     Scaffold(
+        containerColor = Color(0xFF090D16),
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "🪙 Divisas Simulator",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 17.sp,
-                            color = Color.White
+                            text = "🪙 DIVISAS PRO",
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 16.sp,
+                            letterSpacing = 1.sp,
+                            color = Color(0xFFF8FAFC)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         if (currentUser != null) {
                             Card(
                                 colors = CardDefaults.cardColors(
-                                    containerColor = if (currentUser?.isAdmin == true) Color(0xFF8B5CF6) else Color(0xFF38BDF8)
+                                    containerColor = if (currentUser?.isAdmin == true) Color(0xFF7C3AED) else Color(0xFF0284C7)
                                 ),
-                                shape = RoundedCornerShape(12.dp)
+                                shape = RoundedCornerShape(8.dp)
                             ) {
                                 Text(
-                                    text = if (currentUser?.isAdmin == true) "ADMIN" else "CLIENTE",
+                                    text = if (currentUser?.isAdmin == true) "ADMIN" else "USUARIO",
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp)
                                 )
                             }
                         }
@@ -103,7 +98,6 @@ fun AppNavigation(
                 },
                 actions = {
                     if (currentUser != null) {
-                        // Botón de alternancia rápida de rol para facilitar la evaluación del docente
                         IconButton(onClick = {
                             val nextRole = if (currentUser?.isAdmin == true) UserRole.CLIENT else UserRole.ADMIN
                             authViewModel.switchRoleForDemo(nextRole)
@@ -115,21 +109,23 @@ fun AppNavigation(
                         }) {
                             Icon(
                                 imageVector = Icons.Default.SwapHoriz,
-                                contentDescription = "Cambiar Rol",
-                                tint = Color.White
+                                contentDescription = "Alternar Rol",
+                                tint = Color(0xFF38BDF8)
                             )
                         }
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color(0xFF1E3A8A)
-                )
+                    containerColor = Color(0xFF0D131F)
+                ),
+                modifier = Modifier.border(width = 0.5.dp, color = Color(0xFF1E293B))
             )
         },
         bottomBar = {
             NavigationBar(
-                containerColor = Color.White,
-                tonalElevation = 8.dp
+                containerColor = Color(0xFF0D131F),
+                tonalElevation = 0.dp,
+                modifier = Modifier.border(width = 0.5.dp, color = Color(0xFF1E293B))
             ) {
                 // Vista 1: Registro y Sesión
                 NavigationBarItem(
@@ -142,11 +138,13 @@ fun AppNavigation(
                         }
                     },
                     icon = { Icon(Icons.Default.AccountCircle, contentDescription = "Sesión") },
-                    label = { Text("1. Sesión", fontSize = 11.sp, fontWeight = FontWeight.Bold) },
+                    label = { Text("1. Sesión", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) },
                     colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color(0xFF1E3A8A),
-                        selectedTextColor = Color(0xFF1E3A8A),
-                        indicatorColor = Color(0xFFE0E7FF)
+                        selectedIconColor = Color(0xFF38BDF8),
+                        selectedTextColor = Color(0xFF38BDF8),
+                        unselectedIconColor = Color(0xFF64748B),
+                        unselectedTextColor = Color(0xFF64748B),
+                        indicatorColor = Color(0xFF16253B)
                     )
                 )
 
@@ -159,11 +157,13 @@ fun AppNavigation(
                         }
                     },
                     icon = { Icon(Icons.Default.TrendingUp, contentDescription = "Compra/Venta") },
-                    label = { Text("2. Compra/Venta", fontSize = 11.sp, fontWeight = FontWeight.Bold) },
+                    label = { Text("2. Compra/Venta", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) },
                     colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color(0xFF1E3A8A),
-                        selectedTextColor = Color(0xFF1E3A8A),
-                        indicatorColor = Color(0xFFE0E7FF)
+                        selectedIconColor = Color(0xFF10B981),
+                        selectedTextColor = Color(0xFF10B981),
+                        unselectedIconColor = Color(0xFF64748B),
+                        unselectedTextColor = Color(0xFF64748B),
+                        indicatorColor = Color(0xFF063327)
                     )
                 )
 
@@ -176,11 +176,13 @@ fun AppNavigation(
                         }
                     },
                     icon = { Icon(Icons.Default.Security, contentDescription = "Auditoría") },
-                    label = { Text("3. Auditoría", fontSize = 11.sp, fontWeight = FontWeight.Bold) },
+                    label = { Text("3. Auditoría", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) },
                     colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color(0xFF673AB7),
-                        selectedTextColor = Color(0xFF673AB7),
-                        indicatorColor = Color(0xFFEDE7F6)
+                        selectedIconColor = Color(0xFFA78BFA),
+                        selectedTextColor = Color(0xFFA78BFA),
+                        unselectedIconColor = Color(0xFF64748B),
+                        unselectedTextColor = Color(0xFF64748B),
+                        indicatorColor = Color(0xFF2E1065)
                     )
                 )
 
@@ -193,11 +195,13 @@ fun AppNavigation(
                         }
                     },
                     icon = { Icon(Icons.Default.AutoAwesome, contentDescription = "Multimedia") },
-                    label = { Text("4. Multimedia", fontSize = 11.sp, fontWeight = FontWeight.Bold) },
+                    label = { Text("4. Multimedia", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) },
                     colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color(0xFF0F172A),
-                        selectedTextColor = Color(0xFF0F172A),
-                        indicatorColor = Color(0xFFE2E8F0)
+                        selectedIconColor = Color(0xFFF59E0B),
+                        selectedTextColor = Color(0xFFF59E0B),
+                        unselectedIconColor = Color(0xFF64748B),
+                        unselectedTextColor = Color(0xFF64748B),
+                        indicatorColor = Color(0xFF332005)
                     )
                 )
             }

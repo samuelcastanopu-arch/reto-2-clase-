@@ -1,6 +1,5 @@
 package com.divisas.simulator.service
 
-import android.util.Base64
 import com.divisas.simulator.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -24,8 +23,8 @@ object FinnhubApiService {
 
     private const val BASE_URL = "https://finnhub.io/api/v1"
 
-    // Clave de API de Finnhub
-    private const val DEFAULT_API_KEY = "db54h0hr01qv1n8sknu0db54h0hr01qv1n8sknug"
+    // Clave de API de Finnhub profesional
+    private const val DEFAULT_API_KEY = "db5gom1r01qv1n8um3pgdb5gom1r01qv1n8um3q0"
 
     // Tasas base oficiales de referencia frente a COP
     private val BASE_RATES_COP = mutableMapOf(
@@ -48,7 +47,7 @@ object FinnhubApiService {
     fun getMaskedApiKey(): String {
         val key = getApiKey()
         if (key.length <= 8) return "••••••••"
-        return "${key.take(4)}••••••••${key.takeLast(4)}"
+        return "${key.take(4)}••••••••${key.takeLast(5)}"
     }
 
     /**
@@ -120,7 +119,7 @@ object FinnhubApiService {
             }
         }
 
-        // Simulación dinámica de mercado con microvariaciones (-0.4% a +0.4%)
+        // Simulación dinámica de mercado con microvariaciones (-0.35% a +0.40%)
         val delta = Random.nextDouble(-0.35, 0.40)
         val dynamicRate = base * (1.0 + (delta / 100.0))
         val finalRate = Math.round(dynamicRate * 100.0) / 100.0

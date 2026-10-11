@@ -10,7 +10,7 @@ val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
     localProperties.load(localPropertiesFile.inputStream())
 }
-val finnhubApiKey = localProperties.getProperty("FINNHUB_API_KEY", "db54h0hr01qv1n8sknu0db54h0hr01qv1n8sknug")
+val finnhubApiKey = localProperties.getProperty("FINNHUB_API_KEY", "db5gom1r01qv1n8um3pgdb5gom1r01qv1n8um3q0")
 
 android {
     namespace = "com.divisas.simulator"

@@ -1,7 +1,6 @@
 package com.divisas.simulator.presentation.screens.multimedia
 
 import android.content.Intent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -15,20 +14,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.QrCode2
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -55,11 +50,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.divisas.simulator.core.util.CurrencyFormatter
 import com.divisas.simulator.domain.model.MultimediaAsset
 import com.divisas.simulator.presentation.viewmodel.MultimediaViewModel
 import java.text.SimpleDateFormat
@@ -80,32 +73,38 @@ fun MultimediaScreen(
     var selectedAmount by remember { mutableDoubleStateOf(250.0) }
     var selectedTxId by remember { mutableStateOf("TX_${System.currentTimeMillis().toString().takeLast(6)}") }
 
+    val darkCardColor = Color(0xFF101726)
+    val darkBorderColor = Color(0xFF1E293B)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF9FAFB))
+            .background(Color(0xFF070A10))
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
         // ENCABEZADO
         Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A)),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, Color(0xFF334155), RoundedCornerShape(16.dp)),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF0B132B)),
             shape = RoundedCornerShape(16.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
-                            .size(42.dp)
+                            .size(44.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFF38BDF8)),
+                            .background(Color(0xFF1E293B))
+                            .border(1.dp, Color(0xFF38BDF8), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.AutoAwesome,
                             contentDescription = null,
-                            tint = Color(0xFF0F172A),
+                            tint = Color(0xFF38BDF8),
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -113,14 +112,15 @@ fun MultimediaScreen(
                     Column {
                         Text(
                             text = "Servicio de Generación Multimedia 🎨",
-                            color = Color.White,
+                            color = Color(0xFFF8FAFC),
                             fontWeight = FontWeight.Bold,
                             style = MaterialTheme.typography.titleMedium
                         )
                         Text(
                             text = "Componente Android Service en segundo plano",
-                            color = Color(0xFF94A3B8),
-                            fontSize = 12.sp
+                            color = Color(0xFF38BDF8),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium
                         )
                     }
                 }
@@ -140,9 +140,15 @@ fun MultimediaScreen(
 
         // PANEL DE ESTADO DEL SERVICIO ANDROID
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(
+                    1.dp,
+                    if (serviceState.isRunning) Color(0xFF0284C7) else darkBorderColor,
+                    RoundedCornerShape(14.dp)
+                ),
             colors = CardDefaults.cardColors(
-                containerColor = if (serviceState.isRunning) Color(0xFFEFF6FF) else Color.White
+                containerColor = if (serviceState.isRunning) Color(0xFF0C192E) else darkCardColor
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             shape = RoundedCornerShape(14.dp)
@@ -157,18 +163,18 @@ fun MultimediaScreen(
                         text = "Estado del Servicio Android:",
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp,
-                        color = Color(0xFF1E293B)
+                        color = Color(0xFFF8FAFC)
                     )
 
                     Card(
                         colors = CardDefaults.cardColors(
-                            containerColor = if (serviceState.isRunning) Color(0xFFDBEAFE) else Color(0xFFF1F5F9)
+                            containerColor = if (serviceState.isRunning) Color(0xFF0369A1) else Color(0xFF1E293B)
                         ),
                         shape = RoundedCornerShape(6.dp)
                     ) {
                         Text(
                             text = if (serviceState.isRunning) "● EN EJECUCIÓN (Foreground)" else "EN REPOSO",
-                            color = if (serviceState.isRunning) Color(0xFF1D4ED8) else Color(0xFF64748B),
+                            color = if (serviceState.isRunning) Color.White else Color(0xFF94A3B8),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
@@ -185,7 +191,8 @@ fun MultimediaScreen(
                             .fillMaxWidth()
                             .height(6.dp)
                             .clip(RoundedCornerShape(3.dp)),
-                        color = Color(0xFF2563EB)
+                        color = Color(0xFF38BDF8),
+                        trackColor = Color(0xFF1E293B)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
@@ -193,7 +200,7 @@ fun MultimediaScreen(
                 Text(
                     text = serviceState.statusMessage,
                     fontSize = 12.sp,
-                    color = if (serviceState.isRunning) Color(0xFF1E40AF) else Color(0xFF475569),
+                    color = if (serviceState.isRunning) Color(0xFF7DD3FC) else Color(0xFF94A3B8),
                     fontWeight = FontWeight.Medium
                 )
             }
@@ -203,8 +210,10 @@ fun MultimediaScreen(
 
         // CONFIGURADOR DE MULTIMEDIA
         Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, darkBorderColor, RoundedCornerShape(14.dp)),
+            colors = CardDefaults.cardColors(containerColor = darkCardColor),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             shape = RoundedCornerShape(14.dp)
         ) {
@@ -213,7 +222,7 @@ fun MultimediaScreen(
                     text = "Configurar Comprobante Multimedia",
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.titleSmall,
-                    color = Color(0xFF1E293B)
+                    color = Color(0xFFF8FAFC)
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -221,7 +230,7 @@ fun MultimediaScreen(
                 Text(
                     text = "Tipo de Multimedia:",
                     fontSize = 12.sp,
-                    color = Color(0xFF64748B),
+                    color = Color(0xFF94A3B8),
                     fontWeight = FontWeight.SemiBold
                 )
                 Spacer(modifier = Modifier.height(6.dp))
@@ -234,19 +243,37 @@ fun MultimediaScreen(
                         selected = selectedType == "VOUCHER_TRANSACCION",
                         onClick = { selectedType = "VOUCHER_TRANSACCION" },
                         label = { Text("Voucher Digital", fontSize = 11.sp) },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Color(0xFF0369A1),
+                            selectedLabelColor = Color.White,
+                            containerColor = Color(0xFF090D16),
+                            labelColor = Color(0xFF94A3B8)
+                        )
                     )
                     FilterChip(
                         selected = selectedType == "CERTIFICADO_AUDITORIA",
                         onClick = { selectedType = "CERTIFICADO_AUDITORIA" },
                         label = { Text("Certificado 2.5%", fontSize = 11.sp) },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Color(0xFF6D28D9),
+                            selectedLabelColor = Color.White,
+                            containerColor = Color(0xFF090D16),
+                            labelColor = Color(0xFF94A3B8)
+                        )
                     )
                     FilterChip(
                         selected = selectedType == "CARNET_FINANCIERO",
                         onClick = { selectedType = "CARNET_FINANCIERO" },
                         label = { Text("Carnet Operador", fontSize = 11.sp) },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Color(0xFF065F46),
+                            selectedLabelColor = Color.White,
+                            containerColor = Color(0xFF090D16),
+                            labelColor = Color(0xFF94A3B8)
+                        )
                     )
                 }
 
@@ -255,7 +282,7 @@ fun MultimediaScreen(
                 Text(
                     text = "Divisa para el Comprobante:",
                     fontSize = 12.sp,
-                    color = Color(0xFF64748B),
+                    color = Color(0xFF94A3B8),
                     fontWeight = FontWeight.SemiBold
                 )
                 Spacer(modifier = Modifier.height(6.dp))
@@ -269,7 +296,13 @@ fun MultimediaScreen(
                             selected = selectedCurrency == c,
                             onClick = { selectedCurrency = c },
                             label = { Text(c, fontWeight = FontWeight.Bold) },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = Color(0xFF1E293B),
+                                selectedLabelColor = Color(0xFF38BDF8),
+                                containerColor = Color(0xFF090D16),
+                                labelColor = Color(0xFF94A3B8)
+                            )
                         )
                     }
                 }
@@ -292,17 +325,17 @@ fun MultimediaScreen(
                         .fillMaxWidth()
                         .height(48.dp),
                     enabled = !serviceState.isRunning,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0F172A)),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7)),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     if (serviceState.isRunning) {
                         CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Servicio Android Procesando...")
+                        Text("Servicio Android Procesando...", color = Color.White)
                     } else {
-                        Icon(imageVector = Icons.Default.PlayArrow, contentDescription = null)
+                        Icon(imageVector = Icons.Default.PlayArrow, contentDescription = null, tint = Color.White)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Iniciar Servicio para Generar Multimedia", fontWeight = FontWeight.Bold)
+                        Text("Iniciar Servicio para Generar Multimedia", fontWeight = FontWeight.Bold, color = Color.White)
                     }
                 }
             }
@@ -318,12 +351,12 @@ fun MultimediaScreen(
                 text = "Comprobante Multimedia Generado 🖼️",
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.titleMedium,
-                color = Color(0xFF1E293B)
+                color = Color(0xFFF8FAFC)
             )
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            MultimediaVoucherCard(
+            DarkMultimediaVoucherCard(
                 asset = activeAsset,
                 onPlaySound = { multimediaViewModel.playConfirmationAudio() },
                 onShare = {
@@ -345,7 +378,7 @@ fun MultimediaScreen(
                 text = "Historial de Multimedia Generada (${allAssets.size})",
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.titleSmall,
-                color = Color(0xFF1E293B)
+                color = Color(0xFFF8FAFC)
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -354,8 +387,9 @@ fun MultimediaScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                        .padding(vertical = 4.dp)
+                        .border(1.dp, darkBorderColor, RoundedCornerShape(8.dp)),
+                    colors = CardDefaults.cardColors(containerColor = darkCardColor),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Row(
@@ -368,12 +402,12 @@ fun MultimediaScreen(
                             modifier = Modifier
                                 .size(44.dp)
                                 .clip(RoundedCornerShape(6.dp))
-                                .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(6.dp))
+                                .border(1.dp, Color(0xFF38BDF8), RoundedCornerShape(6.dp))
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(text = asset.title, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                            Text(text = "Divisa: ${asset.currencyCode} • Monto: ${asset.amount} • Hash: ${asset.securityHash}", fontSize = 11.sp, color = Color(0xFF64748B))
+                            Text(text = asset.title, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color(0xFFF8FAFC))
+                            Text(text = "Divisa: ${asset.currencyCode} • Monto: ${asset.amount} • Hash: ${asset.securityHash}", fontSize = 11.sp, color = Color(0xFF94A3B8))
                         }
                     }
                 }
@@ -383,16 +417,19 @@ fun MultimediaScreen(
 }
 
 @Composable
-fun MultimediaVoucherCard(
+fun DarkMultimediaVoucherCard(
     asset: MultimediaAsset,
     onPlaySound: () -> Unit,
     onShare: () -> Unit
 ) {
     val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()) }
+    val darkBorderColor = Color(0xFF1E293B)
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, darkBorderColor, RoundedCornerShape(16.dp)),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF101726)),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -401,7 +438,7 @@ fun MultimediaVoucherCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(110.dp)
+                    .height(115.dp)
             ) {
                 AsyncImage(
                     model = asset.bannerImageUrl,
@@ -412,7 +449,7 @@ fun MultimediaVoucherCard(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color(0x99000000))
+                        .background(Color(0xB3000000))
                 )
                 Column(
                     modifier = Modifier
@@ -447,20 +484,20 @@ fun MultimediaVoucherCard(
                             text = "Transacción: ${asset.transactionId}",
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp,
-                            color = Color(0xFF1E293B)
+                            color = Color(0xFFF8FAFC)
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "Monto Operado: ${asset.amount} ${asset.currencyCode}",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF0284C7)
+                            color = Color(0xFF38BDF8)
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "Fecha: ${dateFormat.format(Date(asset.generatedAt))}",
                             fontSize = 11.sp,
-                            color = Color(0xFF64748B)
+                            color = Color(0xFF94A3B8)
                         )
                     }
 
@@ -470,16 +507,16 @@ fun MultimediaVoucherCard(
                             model = asset.qrCodeUrl,
                             contentDescription = "Código QR Oficial",
                             modifier = Modifier
-                                .size(88.dp)
+                                .size(90.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .border(1.dp, Color(0xFFCBD5E1), RoundedCornerShape(8.dp))
+                                .border(1.5.dp, Color(0xFF38BDF8), RoundedCornerShape(8.dp))
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "QR Oficial",
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF64748B)
+                            color = Color(0xFF38BDF8)
                         )
                     }
                 }
@@ -488,8 +525,10 @@ fun MultimediaVoucherCard(
 
                 // Estado del Servicio Multimedia
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF0FDF4)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, Color(0xFF065F46), RoundedCornerShape(8.dp)),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF042F2E)),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Row(
@@ -499,7 +538,7 @@ fun MultimediaVoucherCard(
                         Icon(
                             imageVector = Icons.Default.CheckCircle,
                             contentDescription = null,
-                            tint = Color(0xFF16A34A),
+                            tint = Color(0xFF34D399),
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -507,7 +546,7 @@ fun MultimediaVoucherCard(
                             text = asset.statusText,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium,
-                            color = Color(0xFF15803D)
+                            color = Color(0xFF6EE7B7)
                         )
                     }
                 }
@@ -521,10 +560,13 @@ fun MultimediaVoucherCard(
                 ) {
                     OutlinedButton(
                         onClick = onPlaySound,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .border(1.dp, Color(0xFF38BDF8), RoundedCornerShape(8.dp)),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF38BDF8)),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Icon(Icons.Default.VolumeUp, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
                         Text("Sonido", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
@@ -532,12 +574,12 @@ fun MultimediaVoucherCard(
                     Button(
                         onClick = onShare,
                         modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0F172A)),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7)),
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Compartir", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text("Compartir", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     }
                 }
             }

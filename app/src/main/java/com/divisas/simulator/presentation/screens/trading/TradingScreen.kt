@@ -2,6 +2,7 @@ package com.divisas.simulator.presentation.screens.trading
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,10 +25,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.HourglassEmpty
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -40,6 +38,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -102,18 +101,34 @@ fun TradingScreen(
     val isWithinTolerance = tradingViewModel.isWithinTolerance()
     val totalCop = tradingViewModel.calculateTotalCop()
 
+    val darkCardColor = Color(0xFF101726)
+    val darkBorderColor = Color(0xFF1E293B)
+    val inputBgColor = Color(0xFF090D16)
+
+    val textFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedTextColor = Color(0xFFF8FAFC),
+        unfocusedTextColor = Color(0xFFCBD5E1),
+        focusedBorderColor = Color(0xFF38BDF8),
+        unfocusedBorderColor = Color(0xFF1E293B),
+        focusedLabelColor = Color(0xFF38BDF8),
+        unfocusedLabelColor = Color(0xFF64748B),
+        cursorColor = Color(0xFF38BDF8)
+    )
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF9FAFB))
+                .background(Color(0xFF070A10))
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
             // ENCABEZADO Y TIKER FINNHUB
             Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E3A8A)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, Color(0xFF1E3A8A), RoundedCornerShape(16.dp)),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF0C192E)),
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -124,15 +139,15 @@ fun TradingScreen(
                     ) {
                         Column {
                             Text(
-                                text = "Mercado en Vivo Finnhub 🌐",
+                                text = "Mercado en Vivo Finnhub Pro 🌐",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = Color(0xFFF8FAFC)
                             )
                             Text(
-                                text = "Token API: ${FinnhubApiService.getMaskedApiKey()}",
+                                text = "Token Activo: ${FinnhubApiService.getMaskedApiKey()}",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = Color(0xFF93C5FD)
+                                color = Color(0xFF38BDF8)
                             )
                         }
 
@@ -141,9 +156,9 @@ fun TradingScreen(
                             enabled = !isRefreshing
                         ) {
                             if (isRefreshing) {
-                                CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White)
+                                CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color(0xFF38BDF8))
                             } else {
-                                Icon(Icons.Default.Refresh, contentDescription = "Actualizar", tint = Color.White)
+                                Icon(Icons.Default.Refresh, contentDescription = "Actualizar", tint = Color(0xFF38BDF8))
                             }
                         }
                     }
@@ -153,25 +168,32 @@ fun TradingScreen(
                     // Carrusel de Cotizaciones Finnhub
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         items(currencies) { c ->
+                            val isSelected = c.code == selectedCurrency.code
                             Card(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(10.dp))
+                                    .border(
+                                        1.dp,
+                                        if (isSelected) Color(0xFF38BDF8) else Color(0xFF1E293B),
+                                        RoundedCornerShape(10.dp)
+                                    )
                                     .clickable { tradingViewModel.selectCurrency(c) },
                                 colors = CardDefaults.cardColors(
-                                    containerColor = if (c.code == selectedCurrency.code) Color(0xFF3B82F6) else Color(0xFF172554)
+                                    containerColor = if (isSelected) Color(0xFF16253B) else Color(0xFF0B101B)
                                 )
                             ) {
                                 Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
                                     Text(
                                         text = "${c.flagEmoji} ${c.code}",
-                                        color = Color.White,
+                                        color = if (isSelected) Color(0xFF38BDF8) else Color.White,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 13.sp
                                     )
                                     Text(
                                         text = CurrencyFormatter.formatCop(c.baseRate),
-                                        color = Color(0xFFE0E7FF),
-                                        fontSize = 12.sp
+                                        color = Color(0xFFE2E8F0),
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Medium
                                     )
                                 }
                             }
@@ -184,8 +206,10 @@ fun TradingScreen(
 
             // BILLETERA DEL USUARIO
             Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, darkBorderColor, RoundedCornerShape(14.dp)),
+                colors = CardDefaults.cardColors(containerColor = darkCardColor),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 shape = RoundedCornerShape(14.dp)
             ) {
@@ -194,7 +218,7 @@ fun TradingScreen(
                         Icon(
                             imageVector = Icons.Default.AccountBalanceWallet,
                             contentDescription = null,
-                            tint = Color(0xFF059669),
+                            tint = Color(0xFF10B981),
                             modifier = Modifier.size(22.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -202,22 +226,22 @@ fun TradingScreen(
                             text = "Mi Billetera Persistente",
                             fontWeight = FontWeight.Bold,
                             style = MaterialTheme.typography.titleSmall,
-                            color = Color(0xFF1F2937)
+                            color = Color(0xFFF8FAFC)
                         )
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Text(
-                        text = "Saldo en Pesos Colombianos:",
+                        text = "Saldo Disponible (COP):",
                         fontSize = 12.sp,
-                        color = Color(0xFF6B7280)
+                        color = Color(0xFF94A3B8)
                     )
                     Text(
                         text = CurrencyFormatter.formatCop(wallet?.copBalance ?: 25000000.0),
-                        fontSize = 20.sp,
+                        fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF059669)
+                        color = Color(0xFF10B981)
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -229,20 +253,20 @@ fun TradingScreen(
                         Text(
                             text = "USD: $${wallet?.getForeignBalance("USD") ?: 0.0}",
                             fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color(0xFF374151)
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF7DD3FC)
                         )
                         Text(
                             text = "EUR: €${wallet?.getForeignBalance("EUR") ?: 0.0}",
                             fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color(0xFF374151)
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFFC4B5FD)
                         )
                         Text(
                             text = "GBP: £${wallet?.getForeignBalance("GBP") ?: 0.0}",
                             fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color(0xFF374151)
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFFFDE047)
                         )
                     }
                 }
@@ -252,17 +276,19 @@ fun TradingScreen(
 
             // FORMULARIO DE COMPRA Y VENTA
             Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, darkBorderColor, RoundedCornerShape(14.dp)),
+                colors = CardDefaults.cardColors(containerColor = darkCardColor),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 shape = RoundedCornerShape(14.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Operar Divisas (Compra / Venta)",
+                        text = "Operación de Compra y Venta",
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.titleMedium,
-                        color = Color(0xFF1F2937)
+                        color = Color(0xFFF8FAFC)
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -278,8 +304,10 @@ fun TradingScreen(
                             label = { Text("🟢 COMPRA (Pagar COP)") },
                             modifier = Modifier.weight(1f),
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = Color(0xFFD1FAE5),
-                                selectedLabelColor = Color(0xFF065F46)
+                                selectedContainerColor = Color(0xFF064E3B),
+                                selectedLabelColor = Color(0xFF6EE7B7),
+                                containerColor = Color(0xFF090D16),
+                                labelColor = Color(0xFF94A3B8)
                             )
                         )
                         FilterChip(
@@ -288,8 +316,10 @@ fun TradingScreen(
                             label = { Text("🔴 VENTA (Recibir COP)") },
                             modifier = Modifier.weight(1f),
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = Color(0xFFFEE2E2),
-                                selectedLabelColor = Color(0xFF991B1B)
+                                selectedContainerColor = Color(0xFF7F1D1D),
+                                selectedLabelColor = Color(0xFFFCA5A5),
+                                containerColor = Color(0xFF090D16),
+                                labelColor = Color(0xFF94A3B8)
                             )
                         )
                     }
@@ -300,7 +330,8 @@ fun TradingScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color(0xFFF3F4F6), RoundedCornerShape(10.dp))
+                            .background(Color(0xFF090D16), RoundedCornerShape(10.dp))
+                            .border(1.dp, darkBorderColor, RoundedCornerShape(10.dp))
                             .padding(12.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -309,13 +340,14 @@ fun TradingScreen(
                             Text(
                                 text = "Divisa: ${selectedCurrency.flagEmoji} ${selectedCurrency.name} (${selectedCurrency.code})",
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1F2937),
+                                color = Color(0xFFF8FAFC),
                                 fontSize = 14.sp
                             )
                             Text(
                                 text = "Tasa actual Finnhub: ${CurrencyFormatter.formatCop(selectedCurrency.baseRate)}",
-                                color = Color(0xFF4B5563),
-                                fontSize = 12.sp
+                                color = Color(0xFF38BDF8),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium
                             )
                         }
                     }
@@ -331,9 +363,12 @@ fun TradingScreen(
                             value = amountInput,
                             onValueChange = { tradingViewModel.setAmount(it) },
                             label = { Text("Cantidad (${selectedCurrency.code})") },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier
+                                .weight(1f)
+                                .background(inputBgColor, RoundedCornerShape(10.dp)),
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            colors = textFieldColors,
                             shape = RoundedCornerShape(10.dp)
                         )
 
@@ -341,9 +376,12 @@ fun TradingScreen(
                             value = appliedRateInput,
                             onValueChange = { tradingViewModel.setAppliedRate(it) },
                             label = { Text("Tasa Propuesta (COP)") },
-                            modifier = Modifier.weight(1.2f),
+                            modifier = Modifier
+                                .weight(1.2f)
+                                .background(inputBgColor, RoundedCornerShape(10.dp)),
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            colors = textFieldColors,
                             shape = RoundedCornerShape(10.dp)
                         )
                     }
@@ -352,9 +390,15 @@ fun TradingScreen(
 
                     // INDICADOR DE TOLERANCIA Y REGLA 2.5%
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(
+                                1.dp,
+                                if (isWithinTolerance) Color(0xFF059669) else Color(0xFFD97706),
+                                RoundedCornerShape(10.dp)
+                            ),
                         colors = CardDefaults.cardColors(
-                            containerColor = if (isWithinTolerance) Color(0xFFECFDF5) else Color(0xFFFFFBEB)
+                            containerColor = if (isWithinTolerance) Color(0xFF042F2E) else Color(0xFF451A03)
                         ),
                         shape = RoundedCornerShape(10.dp)
                     ) {
@@ -363,14 +407,14 @@ fun TradingScreen(
                                 Icon(
                                     imageVector = if (isWithinTolerance) Icons.Default.CheckCircle else Icons.Default.Warning,
                                     contentDescription = null,
-                                    tint = if (isWithinTolerance) Color(0xFF059669) else Color(0xFFD97706),
+                                    tint = if (isWithinTolerance) Color(0xFF34D399) else Color(0xFFFBBF24),
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = "Desviación estimada: $deviation%",
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isWithinTolerance) Color(0xFF065F46) else Color(0xFF92400E),
+                                    color = if (isWithinTolerance) Color(0xFF6EE7B7) else Color(0xFFFDE68A),
                                     fontSize = 14.sp
                                 )
                             }
@@ -382,7 +426,7 @@ fun TradingScreen(
                                     "⚠️ Desviación alta (> 2.5%). La regla contable exige que no supere 2.5% al momento de la transición."
                                 },
                                 fontSize = 12.sp,
-                                color = if (isWithinTolerance) Color(0xFF047857) else Color(0xFFB45309)
+                                color = if (isWithinTolerance) Color(0xFFA7F3D0) else Color(0xFFFEF3C7)
                             )
                         }
                     }
@@ -395,12 +439,12 @@ fun TradingScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "Total estimado COP:", color = Color(0xFF6B7280), fontSize = 14.sp)
+                        Text(text = "Total estimado COP:", color = Color(0xFF94A3B8), fontSize = 14.sp)
                         Text(
                             text = CurrencyFormatter.formatCop(totalCop),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E3A8A)
+                            color = Color(0xFF38BDF8)
                         )
                     }
 
@@ -419,13 +463,14 @@ fun TradingScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E3A8A)),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7)),
                         shape = RoundedCornerShape(10.dp)
                     ) {
                         Text(
                             text = if (operationType == OperationType.COMPRA) "Registrar Orden de Compra" else "Registrar Orden de Venta",
                             fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
                         )
                     }
                 }
@@ -435,10 +480,10 @@ fun TradingScreen(
 
             // HISTORIAL PERSONAL DE TRANSACCIONES
             Text(
-                text = "Mis Transacciones Realizadas",
+                text = "Mis Transacciones Registradas",
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.titleMedium,
-                color = Color(0xFF1F2937)
+                color = Color(0xFFF8FAFC)
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -446,12 +491,12 @@ fun TradingScreen(
             if (userTransactions.isEmpty()) {
                 Text(
                     text = "Aún no has registrado transacciones.",
-                    color = Color(0xFF6B7280),
+                    color = Color(0xFF64748B),
                     fontSize = 13.sp
                 )
             } else {
                 userTransactions.forEach { tx ->
-                    TransactionItemCard(tx = tx)
+                    DarkTransactionItemCard(tx = tx)
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }
@@ -467,13 +512,14 @@ fun TradingScreen(
 }
 
 @Composable
-fun TransactionItemCard(tx: Operation) {
+fun DarkTransactionItemCard(tx: Operation) {
     val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()) }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(10.dp)),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF101726)),
         shape = RoundedCornerShape(10.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
@@ -486,16 +532,16 @@ fun TransactionItemCard(tx: Operation) {
                     text = "${if (tx.operationType == OperationType.COMPRA) "🟢 COMPRA" else "🔴 VENTA"} • ${tx.amount} ${tx.currencyCode}",
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,
-                    color = Color(0xFF1F2937)
+                    color = Color(0xFFF8FAFC)
                 )
 
                 // Badge de estado
                 Card(
                     colors = CardDefaults.cardColors(
                         containerColor = when (tx.status) {
-                            OperationStatus.EXITOSA -> Color(0xFFD1FAE5)
-                            OperationStatus.RECHAZADA -> Color(0xFFFEE2E2)
-                            OperationStatus.PENDIENTE_AUDITORIA -> Color(0xFFFEF3C7)
+                            OperationStatus.EXITOSA -> Color(0xFF064E3B)
+                            OperationStatus.RECHAZADA -> Color(0xFF7F1D1D)
+                            OperationStatus.PENDIENTE_AUDITORIA -> Color(0xFF78350F)
                         }
                     ),
                     shape = RoundedCornerShape(6.dp)
@@ -509,9 +555,9 @@ fun TransactionItemCard(tx: Operation) {
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = when (tx.status) {
-                            OperationStatus.EXITOSA -> Color(0xFF065F46)
-                            OperationStatus.RECHAZADA -> Color(0xFF991B1B)
-                            OperationStatus.PENDIENTE_AUDITORIA -> Color(0xFF92400E)
+                            OperationStatus.EXITOSA -> Color(0xFF6EE7B7)
+                            OperationStatus.RECHAZADA -> Color(0xFFFCA5A5)
+                            OperationStatus.PENDIENTE_AUDITORIA -> Color(0xFFFDE68A)
                         },
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
@@ -523,7 +569,7 @@ fun TransactionItemCard(tx: Operation) {
             Text(
                 text = "Tasa Orden: ${CurrencyFormatter.formatCop(tx.rateAtOrder)} | Total: ${CurrencyFormatter.formatCop(tx.totalCop)}",
                 fontSize = 12.sp,
-                color = Color(0xFF4B5563)
+                color = Color(0xFFCBD5E1)
             )
 
             if (tx.status != OperationStatus.PENDIENTE_AUDITORIA) {
@@ -531,7 +577,7 @@ fun TransactionItemCard(tx: Operation) {
                     text = "Tasa en Transición: ${CurrencyFormatter.formatCop(tx.rateAtTransition)} | Variación: ${tx.percentageDeviation}%",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = if (tx.percentageDeviation <= 2.5) Color(0xFF059669) else Color(0xFFDC2626)
+                    color = if (tx.percentageDeviation <= 2.5) Color(0xFF34D399) else Color(0xFFF87171)
                 )
             }
 
@@ -539,7 +585,7 @@ fun TransactionItemCard(tx: Operation) {
                 Text(
                     text = "Nota: ${tx.auditObservation}",
                     fontSize = 11.sp,
-                    color = Color(0xFF6B7280),
+                    color = Color(0xFF94A3B8),
                     fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                 )
             }
@@ -547,7 +593,7 @@ fun TransactionItemCard(tx: Operation) {
             Text(
                 text = "Fecha: ${dateFormat.format(Date(tx.timestamp))} • ID: ${tx.id}",
                 fontSize = 10.sp,
-                color = Color(0xFF9CA3AF)
+                color = Color(0xFF64748B)
             )
         }
     }

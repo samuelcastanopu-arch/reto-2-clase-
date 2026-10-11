@@ -2,8 +2,9 @@ package com.divisas.simulator.presentation.theme
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -48,27 +49,27 @@ val AppTypography = Typography(
     )
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = EmeraldPrimary,
-    onPrimary = EmeraldOnPrimary,
-    primaryContainer = EmeraldContainer,
-    onPrimaryContainer = EmeraldOnContainer,
-    secondary = SlateSecondary,
-    onSecondary = SlateOnSecondary,
-    secondaryContainer = SlateContainer,
-    onSecondaryContainer = SlateOnContainer,
-    background = BackgroundLight,
-    surface = SurfaceLight,
-    surfaceVariant = SurfaceVariantLight,
-    error = ErrorRose,
-    errorContainer = ErrorContainerRose,
-    onError = OnErrorRose
+private val DarkColorScheme = darkColorScheme(
+    primary = AccentCyan,
+    onPrimary = PureBlack,
+    primaryContainer = CardBackgroundDark,
+    onPrimaryContainer = TextPrimaryDark,
+    secondary = AccentIndigo,
+    onSecondary = Color.White,
+    background = MidnightBackground,
+    onBackground = TextPrimaryDark,
+    surface = SurfaceDark,
+    onSurface = TextPrimaryDark,
+    surfaceVariant = CardBackgroundDark,
+    onSurfaceVariant = TextSecondaryDark,
+    error = AccentRose,
+    onError = Color.White
 )
 
 @Composable
 fun DivisasTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = LightColorScheme,
+        colorScheme = DarkColorScheme,
         typography = AppTypography,
         content = content
     )
