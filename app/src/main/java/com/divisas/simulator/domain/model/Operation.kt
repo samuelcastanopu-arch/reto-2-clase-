@@ -27,5 +27,7 @@ data class Operation(
     val status: OperationStatus = OperationStatus.PENDIENTE_AUDITORIA,
     val auditObservation: String = "",
     val auditedBy: String? = null,
-    val auditedAt: Long? = null
+    val auditedAt: Long? = null,
+    val customerPhotoUri: String? = null,              // Foto capturada por la cámara para reconocer al cliente
+    val faceRecognitionVerified: Boolean = false      // Estado de validación biométrica con foto
 )

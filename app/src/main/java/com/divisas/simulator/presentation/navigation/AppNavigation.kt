@@ -7,7 +7,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AutoAwesome
@@ -70,6 +75,18 @@ fun AppNavigation(
             CenterAlignedTopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (currentUser?.photoUrl?.isNotBlank() == true) {
+                            AsyncImage(
+                                model = currentUser?.photoUrl,
+                                contentDescription = "Foto de cliente",
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .clip(CircleShape)
+                                    .border(1.5.dp, Color(0xFF38BDF8), CircleShape),
+                                contentScale = ContentScale.Crop
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
                         Text(
                             text = "🪙 DIVISAS PRO",
                             fontWeight = FontWeight.ExtraBold,

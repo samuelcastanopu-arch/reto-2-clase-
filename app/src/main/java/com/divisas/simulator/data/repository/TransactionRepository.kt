@@ -151,7 +151,9 @@ class TransactionRepository(context: Context) {
                         status = status,
                         auditObservation = obj.optString("auditObservation", ""),
                         auditedBy = if (obj.isNull("auditedBy")) null else obj.optString("auditedBy"),
-                        auditedAt = if (obj.isNull("auditedAt")) null else obj.optLong("auditedAt")
+                        auditedAt = if (obj.isNull("auditedAt")) null else obj.optLong("auditedAt"),
+                        customerPhotoUri = if (obj.has("customerPhotoUri") && !obj.isNull("customerPhotoUri")) obj.getString("customerPhotoUri") else null,
+                        faceRecognitionVerified = obj.optBoolean("faceRecognitionVerified", false)
                     )
                 )
             }
@@ -170,7 +172,9 @@ class TransactionRepository(context: Context) {
         type: OperationType,
         currencyCode: String,
         amount: Double,
-        rateAtOrder: Double
+        rateAtOrder: Double,
+        customerPhotoUri: String? = null,
+        faceRecognitionVerified: Boolean = false
     ): Result<Operation> {
         val wallet = getWallet(userId)
         val totalCop = amount * rateAtOrder
@@ -201,7 +205,9 @@ class TransactionRepository(context: Context) {
             rateAtTransition = rateAtOrder,
             percentageDeviation = 0.0,
             status = OperationStatus.PENDIENTE_AUDITORIA,
-            auditObservation = "En espera de auditoría oficial"
+            auditObservation = if (faceRecognitionVerified) "Identidad de cliente confirmada con foto de cámara. En espera de auditoría." else "En espera de auditoría oficial",
+            customerPhotoUri = customerPhotoUri,
+            faceRecognitionVerified = faceRecognitionVerified
         )
 
         val all = getAllTransactions().toMutableList()
@@ -322,6 +328,8 @@ class TransactionRepository(context: Context) {
                 put("auditObservation", tx.auditObservation)
                 if (tx.auditedBy != null) put("auditedBy", tx.auditedBy)
                 if (tx.auditedAt != null) put("auditedAt", tx.auditedAt)
+                if (tx.customerPhotoUri != null) put("customerPhotoUri", tx.customerPhotoUri)
+                put("faceRecognitionVerified", tx.faceRecognitionVerified)
             }
             array.put(obj)
         }

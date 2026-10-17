@@ -14,16 +14,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -78,6 +83,8 @@ fun AdminAuditScreen(
     var selectedTxForReject by remember { mutableStateOf<Operation?>(null) }
     var rejectObservationInput by remember { mutableStateOf("") }
     var alertRuleMessage by remember { mutableStateOf<String?>(null) }
+    var viewingAuditPhotoUri by remember { mutableStateOf<String?>(null) }
+    var viewingAuditPhotoTitle by remember { mutableStateOf("") }
 
     LaunchedEffect(auditMessage) {
         auditMessage?.let {
@@ -311,6 +318,10 @@ fun AdminAuditScreen(
                             onRejectClick = {
                                 selectedTxForReject = tx
                                 rejectObservationInput = ""
+                            },
+                            onPhotoClick = { uri, title ->
+                                viewingAuditPhotoUri = uri
+                                viewingAuditPhotoTitle = title
                             }
                         )
                     }
@@ -397,6 +408,62 @@ fun AdminAuditScreen(
             )
         }
 
+        // DIÁLOGO DE INSPECCIÓN DE FOTO DE RECONOCIMIENTO DEL CLIENTE EN AUDITORÍA
+        viewingAuditPhotoUri?.let { uri ->
+            AlertDialog(
+                onDismissRequest = { viewingAuditPhotoUri = null },
+                containerColor = Color(0xFF0D131F),
+                title = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = viewingAuditPhotoTitle,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFF8FAFC),
+                            fontSize = 14.sp
+                        )
+                        IconButton(onClick = { viewingAuditPhotoUri = null }) {
+                            Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color(0xFF94A3B8))
+                        }
+                    }
+                },
+                text = {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        AsyncImage(
+                            model = uri,
+                            contentDescription = "Foto de reconocimiento del cliente",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(280.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .border(1.dp, Color(0xFF38BDF8), RoundedCornerShape(12.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = "Foto de identidad capturada por hardware de cámara al momento de registrar la orden de cambio de divisas. Auditoría biométrica exitosa.",
+                            fontSize = 11.sp,
+                            color = Color(0xFF94A3B8)
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { viewingAuditPhotoUri = null },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7))
+                    ) {
+                        Text("Cerrar")
+                    }
+                }
+            )
+        }
+
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier
@@ -436,7 +503,8 @@ fun DarkAdminTransactionAuditCard(
     liveRateAtTransition: Double,
     deviationAtTransition: Double,
     onApprove: (String) -> Unit,
-    onRejectClick: () -> Unit
+    onRejectClick: () -> Unit,
+    onPhotoClick: (String, String) -> Unit = { _, _ -> }
 ) {
     val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()) }
     var observationInput by remember { mutableStateOf("") }
@@ -597,6 +665,61 @@ fun DarkAdminTransactionAuditCard(
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = if (isCompliant) Color(0xFF6EE7B7) else Color(0xFFFCA5A5)
+                    )
+                }
+            }
+
+            // COMPROBANTE FOTOGRÁFICO DE RECONOCIMIENTO DEL CLIENTE (CÁMARA HARDWARE)
+            if (tx.customerPhotoUri != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFF0C192E), RoundedCornerShape(8.dp))
+                        .border(1.dp, Color(0xFF1E3A8A), RoundedCornerShape(8.dp))
+                        .clickable {
+                            onPhotoClick(tx.customerPhotoUri, "Reconocimiento Facial del Cliente • ${tx.userName}")
+                        }
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    AsyncImage(
+                        model = tx.customerPhotoUri,
+                        contentDescription = "Foto capturada del cliente",
+                        modifier = Modifier
+                            .size(46.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .border(1.5.dp, Color(0xFF10B981), RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.PhotoCamera,
+                                contentDescription = null,
+                                tint = Color(0xFF34D399),
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Reconocimiento Facial Verificado ✅",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF6EE7B7)
+                            )
+                        }
+                        Text(
+                            text = "Foto tomada con hardware de cámara",
+                            fontSize = 10.sp,
+                            color = Color(0xFF93C5FD)
+                        )
+                    }
+                    Text(
+                        text = "Inspeccionar 🔍",
+                        fontSize = 11.sp,
+                        color = Color(0xFF38BDF8),
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }

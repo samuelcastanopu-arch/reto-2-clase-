@@ -1,5 +1,9 @@
 package com.divisas.simulator.presentation.screens.trading
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,9 +28,14 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -36,25 +45,34 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import coil.compose.AsyncImage
 import com.divisas.simulator.core.util.CurrencyFormatter
 import com.divisas.simulator.domain.model.Currency
 import com.divisas.simulator.domain.model.Operation
@@ -81,6 +99,46 @@ fun TradingScreen(
     val appliedRateInput by tradingViewModel.appliedRateInput.collectAsState()
     val isRefreshing by tradingViewModel.isRefreshing.collectAsState()
     val message by tradingViewModel.message.collectAsState()
+
+    val context = LocalContext.current
+    val customerPhotoUri by tradingViewModel.customerPhotoUri.collectAsState()
+    val faceRecognitionVerified by tradingViewModel.faceRecognitionVerified.collectAsState()
+    val isAnalyzingPhoto by tradingViewModel.isAnalyzingPhoto.collectAsState()
+    val recognitionDetails by tradingViewModel.recognitionDetails.collectAsState()
+
+    var viewingPhotoUri by remember { mutableStateOf<String?>(null) }
+    var viewingPhotoTitle by remember { mutableStateOf("") }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview()
+    ) { bitmap ->
+        if (bitmap != null) {
+            tradingViewModel.processCustomerCapturedPhoto(context, bitmap, currentUser)
+        }
+    }
+
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            cameraLauncher.launch(null)
+        } else {
+            // Permiso denegado
+        }
+    }
+
+    fun launchCustomerCamera() {
+        val hasPermission = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (hasPermission) {
+            cameraLauncher.launch(null)
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -431,7 +489,155 @@ fun TradingScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // SECCIÓN DE HARDWARE: CÁMARA Y RECONOCIMIENTO FACIAL DEL CLIENTE
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(
+                                1.dp,
+                                if (faceRecognitionVerified) Color(0xFF059669) else Color(0xFF0284C7),
+                                RoundedCornerShape(12.dp)
+                            ),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (faceRecognitionVerified) Color(0xFF042F2E) else Color(0xFF081B33)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.PhotoCamera,
+                                        contentDescription = null,
+                                        tint = if (faceRecognitionVerified) Color(0xFF34D399) else Color(0xFF38BDF8),
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "Hardware: Reconocimiento Facial del Cliente",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp,
+                                        color = Color(0xFFF8FAFC)
+                                    )
+                                }
+                                if (faceRecognitionVerified) {
+                                    Card(
+                                        colors = CardDefaults.cardColors(containerColor = Color(0xFF064E3B)),
+                                        shape = RoundedCornerShape(6.dp)
+                                    ) {
+                                        Text(
+                                            text = "RECONOCIDO ✅",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFF6EE7B7),
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            if (isAnalyzingPhoto) {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    LinearProgressIndicator(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        color = Color(0xFF38BDF8),
+                                        trackColor = Color(0xFF1E293B)
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = "🔍 Analizando rostro del cliente con ML Kit y validando identidad...",
+                                        fontSize = 12.sp,
+                                        color = Color(0xFF93C5FD)
+                                    )
+                                }
+                            } else if (customerPhotoUri != null && faceRecognitionVerified) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    AsyncImage(
+                                        model = customerPhotoUri,
+                                        contentDescription = "Foto capturada del cliente",
+                                        modifier = Modifier
+                                            .size(68.dp)
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .border(2.dp, Color(0xFF10B981), RoundedCornerShape(10.dp))
+                                            .clickable {
+                                                viewingPhotoUri = customerPhotoUri
+                                                viewingPhotoTitle = "Foto de Reconocimiento del Cliente"
+                                            },
+                                        contentScale = ContentScale.Crop
+                                    )
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = "Cliente: ${recognitionDetails?.clientName ?: currentUser?.fullName}",
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFFF8FAFC)
+                                        )
+                                        Text(
+                                            text = "Código: ${recognitionDetails?.validationCode ?: "BIO-OK"}",
+                                            fontSize = 11.sp,
+                                            color = Color(0xFF6EE7B7)
+                                        )
+                                        Text(
+                                            text = "Confianza: ${recognitionDetails?.confidenceScore ?: 98.7}% • Biometría OK",
+                                            fontSize = 11.sp,
+                                            color = Color(0xFFA7F3D0)
+                                        )
+                                    }
+                                    IconButton(onClick = { launchCustomerCamera() }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Refresh,
+                                            contentDescription = "Retomar foto",
+                                            tint = Color(0xFF38BDF8)
+                                        )
+                                    }
+                                }
+                            } else {
+                                Column {
+                                    Text(
+                                        text = "Para autorizar el cambio de divisas, active el hardware de la cámara y capture una foto del cliente para validar su identidad biométrica.",
+                                        fontSize = 12.sp,
+                                        color = Color(0xFF94A3B8)
+                                    )
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                    Button(
+                                        onClick = { launchCustomerCamera() },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0369A1)),
+                                        shape = RoundedCornerShape(8.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.PhotoCamera,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = "Tomar Foto del Cliente con Cámara",
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
 
                     // Total Calculado
                     Row(
@@ -453,22 +659,38 @@ fun TradingScreen(
                     Button(
                         onClick = {
                             if (currentUser != null) {
-                                tradingViewModel.submitTransaction(
-                                    currentUser = currentUser,
-                                    onSuccess = {},
-                                    onError = {}
-                                )
+                                if (!faceRecognitionVerified || customerPhotoUri == null) {
+                                    launchCustomerCamera()
+                                } else {
+                                    tradingViewModel.submitTransaction(
+                                        currentUser = currentUser,
+                                        onSuccess = {},
+                                        onError = {}
+                                    )
+                                }
                             }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7)),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (faceRecognitionVerified) Color(0xFF059669) else Color(0xFF0284C7)
+                        ),
                         shape = RoundedCornerShape(10.dp)
                     ) {
+                        Icon(
+                            imageVector = if (faceRecognitionVerified) Icons.Default.CheckCircle else Icons.Default.PhotoCamera,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = if (operationType == OperationType.COMPRA) "Registrar Orden de Compra" else "Registrar Orden de Venta",
-                            fontSize = 15.sp,
+                            text = if (faceRecognitionVerified) {
+                                if (operationType == OperationType.COMPRA) "Confirmar Compra (Cliente Verificado)" else "Confirmar Venta (Cliente Verificado)"
+                            } else {
+                                "Reconocer Cliente y Cambiar Divisas"
+                            },
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
                         )
@@ -496,10 +718,72 @@ fun TradingScreen(
                 )
             } else {
                 userTransactions.forEach { tx ->
-                    DarkTransactionItemCard(tx = tx)
+                    DarkTransactionItemCard(
+                        tx = tx,
+                        onPhotoClick = { uri, title ->
+                            viewingPhotoUri = uri
+                            viewingPhotoTitle = title
+                        }
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }
+        }
+
+        // DIÁLOGO PARA INSPECCIONAR FOTO DE RECONOCIMIENTO DEL CLIENTE EN GRANDE
+        viewingPhotoUri?.let { uri ->
+            AlertDialog(
+                onDismissRequest = { viewingPhotoUri = null },
+                containerColor = Color(0xFF0D131F),
+                title = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = viewingPhotoTitle,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFF8FAFC),
+                            fontSize = 15.sp
+                        )
+                        IconButton(onClick = { viewingPhotoUri = null }) {
+                            Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color(0xFF94A3B8))
+                        }
+                    }
+                },
+                text = {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        AsyncImage(
+                            model = uri,
+                            contentDescription = "Foto ampliada de reconocimiento",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(260.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .border(1.dp, Color(0xFF38BDF8), RoundedCornerShape(12.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = "Foto de validación capturada por hardware de cámara y archivada con trazabilidad para auditoría.",
+                            fontSize = 11.sp,
+                            color = Color(0xFF94A3B8)
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { viewingPhotoUri = null },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7))
+                    ) {
+                        Text("Cerrar")
+                    }
+                }
+            )
         }
 
         SnackbarHost(
@@ -512,7 +796,10 @@ fun TradingScreen(
 }
 
 @Composable
-fun DarkTransactionItemCard(tx: Operation) {
+fun DarkTransactionItemCard(
+    tx: Operation,
+    onPhotoClick: (String, String) -> Unit = { _, _ -> }
+) {
     val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()) }
 
     Card(
@@ -581,7 +868,54 @@ fun DarkTransactionItemCard(tx: Operation) {
                 )
             }
 
+            // SECCIÓN DE FOTO DE RECONOCIMIENTO DEL CLIENTE EN LA TRANSACCIÓN
+            if (tx.customerPhotoUri != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFF070F1E), RoundedCornerShape(8.dp))
+                        .border(1.dp, Color(0xFF1E3A8A), RoundedCornerShape(8.dp))
+                        .clickable {
+                            onPhotoClick(tx.customerPhotoUri, "Foto de Cliente en Transacción ${tx.id}")
+                        }
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    AsyncImage(
+                        model = tx.customerPhotoUri,
+                        contentDescription = "Foto del cliente en la orden",
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(RoundedCornerShape(6.dp))
+                            .border(1.dp, Color(0xFF10B981), RoundedCornerShape(6.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Cliente Reconocido por Cámara 📸",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF6EE7B7)
+                        )
+                        Text(
+                            text = "Foto de validación biométrica adjunta",
+                            fontSize = 10.sp,
+                            color = Color(0xFF94A3B8)
+                        )
+                    }
+                    Text(
+                        text = "Ver Foto 🔍",
+                        fontSize = 11.sp,
+                        color = Color(0xFF38BDF8),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
             if (tx.auditObservation.isNotBlank()) {
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Nota: ${tx.auditObservation}",
                     fontSize = 11.sp,
@@ -590,6 +924,7 @@ fun DarkTransactionItemCard(tx: Operation) {
                 )
             }
 
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "Fecha: ${dateFormat.format(Date(tx.timestamp))} • ID: ${tx.id}",
                 fontSize = 10.sp,

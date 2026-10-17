@@ -133,6 +133,18 @@ class UserRepository(context: Context) {
         return updated
     }
 
+    fun updateUserPhoto(userId: String, photoUrl: String): User? {
+        val users = getAllUsers().toMutableList()
+        val index = users.indexOfFirst { it.uid == userId }
+        if (index != -1) {
+            val updated = users[index].copy(photoUrl = photoUrl)
+            users[index] = updated
+            saveUsersList(users)
+            return updated
+        }
+        return null
+    }
+
     fun logout() {
         saveCurrentUserId(null)
     }

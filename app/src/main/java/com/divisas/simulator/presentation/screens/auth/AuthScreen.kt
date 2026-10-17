@@ -1,5 +1,9 @@
 package com.divisas.simulator.presentation.screens.auth
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -25,8 +29,13 @@ import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+import coil.compose.AsyncImage
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -73,6 +82,37 @@ fun AuthScreen(
     val currentUser by authViewModel.currentUser.collectAsState()
     val isLoading by authViewModel.isLoading.collectAsState()
     val errorMessage by authViewModel.errorMessage.collectAsState()
+
+    val context = LocalContext.current
+
+    val profileCameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview()
+    ) { bitmap ->
+        if (bitmap != null) {
+            authViewModel.updateUserPhotoFromCamera(context, bitmap)
+        }
+    }
+
+    val profilePermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            profileCameraLauncher.launch(null)
+        }
+    }
+
+    fun launchProfileCamera() {
+        val hasPermission = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (hasPermission) {
+            profileCameraLauncher.launch(null)
+        } else {
+            profilePermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
 
     var selectedTab by remember { mutableIntStateOf(0) } // 0 = Iniciar Sesión, 1 = Registrarse
 
@@ -175,19 +215,31 @@ fun AuthScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(52.dp)
-                                .clip(CircleShape)
-                                .background(if (user.isAdmin) Color(0xFF7C3AED) else Color(0xFF0284C7)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = if (user.isAdmin) Icons.Default.AdminPanelSettings else Icons.Default.Person,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(30.dp)
+                        if (user.photoUrl.isNotBlank()) {
+                            AsyncImage(
+                                model = user.photoUrl,
+                                contentDescription = "Foto de perfil del cliente",
+                                modifier = Modifier
+                                    .size(56.dp)
+                                    .clip(CircleShape)
+                                    .border(2.dp, Color(0xFF38BDF8), CircleShape),
+                                contentScale = ContentScale.Crop
                             )
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .size(56.dp)
+                                    .clip(CircleShape)
+                                    .background(if (user.isAdmin) Color(0xFF7C3AED) else Color(0xFF0284C7)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = if (user.isAdmin) Icons.Default.AdminPanelSettings else Icons.Default.Person,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                            }
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
@@ -203,6 +255,29 @@ fun AuthScreen(
                                 color = Color(0xFF94A3B8)
                             )
                         }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Botón para tomar foto del cliente con el hardware de la cámara
+                    OutlinedButton(
+                        onClick = { launchProfileCamera() },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF38BDF8)),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF0284C7))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PhotoCamera,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = if (user.photoUrl.isNotBlank()) "📸 Actualizar Foto con Cámara" else "📸 Tomar Foto del Cliente (Cámara)",
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 12.sp
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))

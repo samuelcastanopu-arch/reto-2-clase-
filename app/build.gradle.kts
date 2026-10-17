@@ -82,6 +82,9 @@ dependencies {
     // Coil para carga de multimedia e imágenes de comprobantes
     implementation(libs.coil.compose)
 
+    // ML Kit Face Detection para reconocimiento facial de clientes
+    implementation(libs.mlkit.face.detection)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

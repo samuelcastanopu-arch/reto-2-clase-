@@ -10,6 +10,10 @@ import com.divisas.simulator.domain.model.Operation
 import com.divisas.simulator.domain.model.OperationType
 import com.divisas.simulator.domain.model.User
 import com.divisas.simulator.domain.model.Wallet
+import android.content.Context
+import android.graphics.Bitmap
+import com.divisas.simulator.service.ClientFaceRecognitionService
+import com.divisas.simulator.service.FaceDetectionResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -46,6 +50,19 @@ class TradingViewModel(application: Application) : AndroidViewModel(application)
 
     private val _message = MutableStateFlow<String?>(null)
     val message: StateFlow<String?> = _message.asStateFlow()
+
+    // Estado del Hardware de Cámara y Reconocimiento del Cliente
+    private val _customerPhotoUri = MutableStateFlow<String?>(null)
+    val customerPhotoUri: StateFlow<String?> = _customerPhotoUri.asStateFlow()
+
+    private val _faceRecognitionVerified = MutableStateFlow(false)
+    val faceRecognitionVerified: StateFlow<Boolean> = _faceRecognitionVerified.asStateFlow()
+
+    private val _isAnalyzingPhoto = MutableStateFlow(false)
+    val isAnalyzingPhoto: StateFlow<Boolean> = _isAnalyzingPhoto.asStateFlow()
+
+    private val _recognitionDetails = MutableStateFlow<FaceDetectionResult.Success?>(null)
+    val recognitionDetails: StateFlow<FaceDetectionResult.Success?> = _recognitionDetails.asStateFlow()
 
     init {
         // Inicializar tasa sugerida con la divisa por defecto
@@ -109,6 +126,45 @@ class TradingViewModel(application: Application) : AndroidViewModel(application)
         return amount * rate
     }
 
+    /**
+     * Procesa la foto tomada por el hardware de la cámara del cliente.
+     * Guarda la imagen en almacenamiento local y ejecuta el reconocimiento facial biométrico con ML Kit.
+     */
+    fun processCustomerCapturedPhoto(context: Context, bitmap: Bitmap, currentUser: User?) {
+        viewModelScope.launch {
+            _isAnalyzingPhoto.value = true
+            try {
+                val savedUri = ClientFaceRecognitionService.saveCapturedPhoto(context, bitmap, prefix = "client_tx")
+                _customerPhotoUri.value = savedUri
+
+                ClientFaceRecognitionService.analyzeClientFace(bitmap, currentUser) { result ->
+                    _isAnalyzingPhoto.value = false
+                    when (result) {
+                        is FaceDetectionResult.Success -> {
+                            _faceRecognitionVerified.value = true
+                            _recognitionDetails.value = result
+                            _message.value = "✅ ${result.message}"
+                        }
+                        is FaceDetectionResult.Error -> {
+                            _faceRecognitionVerified.value = false
+                            _recognitionDetails.value = null
+                            _message.value = "⚠️ ${result.reason}"
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                _isAnalyzingPhoto.value = false
+                _message.value = "Error al procesar la foto de la cámara: ${e.localizedMessage}"
+            }
+        }
+    }
+
+    fun clearCustomerPhoto() {
+        _customerPhotoUri.value = null
+        _faceRecognitionVerified.value = false
+        _recognitionDetails.value = null
+    }
+
     fun submitTransaction(
         currentUser: User,
         onSuccess: (Operation) -> Unit,
@@ -126,6 +182,12 @@ class TradingViewModel(application: Application) : AndroidViewModel(application)
             return
         }
 
+        // Validación de Reconocimiento de Cliente por Foto (Hardware)
+        if (!_faceRecognitionVerified.value || _customerPhotoUri.value == null) {
+            onError("📸 Se requiere capturar la foto del cliente con la cámara para el reconocimiento y autorización del cambio de divisas.")
+            return
+        }
+
         val result = transactionRepository.createTransaction(
             userId = currentUser.uid,
             userEmail = currentUser.email,
@@ -133,13 +195,16 @@ class TradingViewModel(application: Application) : AndroidViewModel(application)
             type = _operationType.value,
             currencyCode = _selectedCurrency.value.code,
             amount = amount,
-            rateAtOrder = appliedRate
+            rateAtOrder = appliedRate,
+            customerPhotoUri = _customerPhotoUri.value,
+            faceRecognitionVerified = _faceRecognitionVerified.value
         )
 
         if (result.isSuccess) {
             val op = result.getOrNull()!!
             loadUserData(currentUser)
-            _message.value = "Transacción enviada a auditoría con éxito."
+            clearCustomerPhoto()
+            _message.value = "Transacción autorizada con foto del cliente y enviada a auditoría."
             onSuccess(op)
         } else {
             val err = result.exceptionOrNull()?.localizedMessage ?: "Error al registrar la transacción."

@@ -82,6 +82,19 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         _currentUser.value = updated
     }
 
+    fun updateUserPhotoFromCamera(context: android.content.Context, bitmap: android.graphics.Bitmap) {
+        val current = _currentUser.value ?: return
+        try {
+            val uri = com.divisas.simulator.service.ClientFaceRecognitionService.saveCapturedPhoto(context, bitmap, prefix = "profile_${current.uid}")
+            val updated = userRepository.updateUserPhoto(current.uid, uri)
+            if (updated != null) {
+                _currentUser.value = updated
+            }
+        } catch (e: Exception) {
+            _errorMessage.value = "Error al guardar foto de perfil: ${e.localizedMessage}"
+        }
+    }
+
     fun logout(onSuccess: () -> Unit = {}) {
         userRepository.logout()
         _currentUser.value = null
